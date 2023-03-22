@@ -1,0 +1,270 @@
+---
+title: "GG plots"
+output: Oge Chukwuemeka
+---
+
+
+Reference to www.r-graph-gallery.com. 
+    
+
+Most commonly used plots: Histogram, Box plot, Bar chart, line plot, Density plots, Scatter plot,pie chart, tree map/mosaic plot, Time series,lollipop, wordcloud.... 
+common components of a ggplot :
+geom_plottype(), facet_wrap(),scale_fill_manual(), ggtitle(),theme_ipsum(),theme(),labs()...
+
+```{r}
+#load library
+library(tidyverse)
+library(lubridate)
+library(ggcorrplot)
+library(corrplot)
+library(DataExplorer) 
+library(ggplot2) #load library ggplot
+library(corrplot)
+library(GGally)
+library(gridExtra)
+
+```
+
+```{r}
+#mine installation
+
+install.packages("ggplot2")
+install.packages("GGally")
+install.packages("DataExplorer")
+install.packages("corrplot")
+install.packages("ggcorrplot")
+install.packages("gridExtra")
+install.packages("lubridate")
+install.packages("tidyverse")
+
+```
+
+```{r}
+diamond_data <- diamonds
+```
+
+INDIVIDUAL PLOTS - UNIVARIATES
+
+Numerical variables:
+
+HISTOGRAMS are used to display the distribution of one or more numerical variables/predictors. It requires only 1 numerical value input.
+The bin size can be altered by providing a binwidth argument within the geom_histogram() to suite need.
+
+```{r}
+summary(diamond_data)
+
+```
+
+```{r}
+# using base r 
+
+hist(diamond_data$depth)
+
+# using ggplot
+
+ggplot(diamond_data, aes(carat)) + geom_histogram(binwidth = 0.3) + # aesthetics can 
+  ylab("Frequency") +
+  xlab("CARAT") +
+  ggtitle("Distribution of carat")
+  
+```
+
+BOX PLOTS :- used to show a summary of one or more numerical variables. Its composed of many elements: The median, Quartiles, Inter-quartile range, Outliers.
+Note a box plot should never be used alone as there is always a loss of information within it. It shows only the summary except combined with other opions. It can also show the distribution for groups in a variable.
+
+```{r}
+ggplot(diamond_data, aes(x=as.factor(cut), y=depth)) + 
+    geom_boxplot(fill="slateblue", alpha=0.2) + 
+    xlab("CUT")+
+    ylab("DEPTH")
+```
+
+
+Adding jitters can help show the datapoints for better visualization sing + geom_jitter()
+
+```{r}
+
+ggplot(diamond_data, aes(x=as.factor(cut), y=depth)) + 
+    geom_boxplot(fill="slateblue", alpha=0.2) + 
+  geom_jitter(color = "red")+
+    xlab("CUTr")+
+    ylab("DEPTH")
+```
+
+
+DENSITY PLOTS - This represents uni variate distribution of numeric variables. Using a kernel density estimate, its smoothed over a histogram.
+
+```{r}
+
+ggplot(data = diamond_data, aes(x=price, fill = cut)) + 
+    geom_density(alpha = 0.3) + 
+  facet_wrap(~cut)+
+    xlab("PRICE") +
+  ylab("CUT")
+
+# transparency can be added with alpha value within the geom_density also it can be grouped
+```
+
+Categorical plots
+
+BAR PLOTS - Can be used to show rhe frequency distribution of categorical variables.
+
+```{r}
+
+ggplot(data = diamond_data, aes(x=color)) + 
+    geom_bar(color = "green", fill = "yellow") + 
+    xlab("COLOR")+
+  ggtitle("A frequency distribution of the Colors of the diamonds")
+
+```
+
+changing the coordinates of the bars using coord_flip() 
+```{r}
+ggplot(data = diamond_data, aes(x=color)) + 
+    geom_bar(color = "green", fill = "yellow") + 
+    xlab("COLOR")+
+  coord_flip() +
+  ggtitle("A frequency distribution of the Colors of the diamonds")
+
+```
+
+PIE CHART - 
+
+```{r}
+
+ggplot(diamond_data, aes(x="", y= cut, fill = cut)) +
+  geom_bar(stat="identity", width=1, color = "white") +
+  coord_polar("y", start = 0)
+
+
+```
+
+
+
+
+
+
+
+BIVARIATE PLOTS
+
+Relationship plots between variables. Gives insights into correlation.
+
+Numerical VS Numerical
+
+Scatter plot - Each dot represents an observation. The positions of the X and Y represents the values of the 2 variables.
+
+```{r}
+
+ggplot(diamond_data, aes(x = x, y = price)) +
+  geom_point()
+
+```
+
+
+Numerical Vs Catgorical
+
+```{r}
+#library(hrbrthemes)
+
+ggplot(diamond_data, aes(x = x, y = price, color = cut)) +
+  geom_point()
+
+ggplot(diamond_data, aes(x = x, y = price)) +
+  facet_wrap(~cut) +
+  geom_point()
+
+ggplot(diamond_data, aes(x = x, y = price , color = cut)) +
+  facet_wrap(~cut) +
+  geom_point() +
+  theme_ipsum()
+
+# bar chart can be used for categorical and numerical where there are few leveles with fixed discrete values.
+         
+
+```
+
+Categorical VS Categorical
+Using ftable(Flat contingency table) , structable(Structured contingency table) and mosaic plot
+
+```{r}
+library (vcd)
+tbl1 = xtabs(~cut + color, diamond_data)
+ftable(tbl1)
+
+Cut_color<- structable(~cut+color, data = diamond_data)
+Cut_color
+
+## Comparing the Cut by Color using a mosaic plot
+
+mosaic(Cut_color, labeling = labeling_values, shade = TRUE, legend = FALSE, labeling_args = list(set_varnames = c( cut = "Diamond cut", color = "Diamond Color")), main ="Diamond cut VS Diamond color")
+
+```
+
+
+```{r}
+summary(diamond_data)
+
+```
+
+LOLLIPOP Plots
+
+```{r}
+
+data <- data.frame(
+  x = c("A","B","C","D","E","F","G"),
+  y = c(15,25,10,21,34,26,30)
+)
+
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = "red", size = 4) +
+  geom_segment(aes(x=x, xend = x, y = 0, yend =y))
+
+## when not to use Lollipop plots
+ggplot(diamond_data, aes(x = color, y = x)) +
+  geom_point(color = "red", size = 4) +
+  geom_segment(aes(x=color, xend = color, y = 0, yend =x))
+
+
+```
+
+
+
+Corerlation plots and Multi variate plots
+
+```{r}
+library(PerformanceAnalytics)
+```
+
+```{r}
+
+# computation of all pairwise correlation
+
+chart.Correlation(diamond_data[,c(5:10)], histogram = TRUE, method = "pearson")
+chart.Correlation(diamond_data[,c(5:10)], histogram = TRUE, method = "spearman")
+
+```
+
+
+```{r}
+corrplot(diamond_data[,c(5:10)], method = 'color', order = 'alphabet')
+```
+
+```{r}
+# Corrgram library
+library(corrgram)
+
+M = cor(na.omit(diamond_data[,c(5:10)]))
+M
+# First
+corrgram(M, order=TRUE, lower.panel=panel.shade, upper.panel=panel.pie, text.panel=panel.txt, main="Car Milage Data in PC2/PC1 Order") 
+
+# second
+corrgram(M, order=NULL, lower.panel=panel.shade, upper.panel=NULL, text.panel=panel.txt, main="Car Milage Data (unsorted)")
+
+```
+
+
+
+
+
+
